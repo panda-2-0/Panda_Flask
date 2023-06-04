@@ -13,17 +13,12 @@ def hello_world():
     return 'Hello World!'
 
 @app.route('/hello')
-def fuckPy():
-    return '파이썬 화나네'
+def helloPy():
+    return 'hello'
 
 @app.route('/api/sendAssociation',methods=['GET','POST'])
 def receiveData():
     recData=request.get_json()
-    # print(recData)
-    # print(recData['myList'])
-    # print(recData['otherList']['b1234567@email.com'])
-
-
 
     # 'otherList' 값 가져오기
     myList= recData['myList']
@@ -63,7 +58,6 @@ def receiveData():
 
     for items in sorted_result:
         if set(items[1]).issubset(userSet) and items[0]>1:    #향상도가 1이상 이고, 사용자가 구매or조회한 제품 선택
-            # print(items)
             recommendSet.append(items[2])
 
     normal_array = [list(item) for item in recommendSet]  #frozenset인거 일반 list타입으로 변경
@@ -75,9 +69,6 @@ def receiveData():
 
 
     data = {
-        # 'name': 'John',
-        # 'age': 30,
-        # 'city': 'New York',
         'list': list3
     }
     return jsonify(data)
