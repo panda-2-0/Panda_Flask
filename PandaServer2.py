@@ -15,7 +15,6 @@ okt = Okt()
 with open('intents.json', 'rb') as file:
     file_content = file.read().decode('utf-8')
 data = json.loads(file_content)
-
 # 챗봇 분석 전에 처리할 항목들
 words = []
 labels = []
