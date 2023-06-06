@@ -34,6 +34,31 @@ for intent in data['intents']:
 words = [okt.morphs(w.lower())[0] for w in words if w != "?"]
 words = sorted(list(set(words)))
 labels = sorted(labels)
+
+tensorflow.compat.v1.reset_default_graph()
+model = keras.models.load_model("model.h5")
+
+training = []
+output = []
+
+out_empty = [0 for _ in range(len(labels))]
+
+for x, doc in enumerate(docs_x):
+    bag = []
+
+    wrds = [okt.morphs(w.lower())[0] for w in doc]
+    # print(wrds)
+    for w in words:
+        if w in wrds:
+            bag.append(1)
+        else:
+            bag.append(0)
+
+    output_row = out_empty[:]
+    output_row[labels.index(docs_y[x])] = 1
+
+    training.append(bag)
+    output.append(output_row)
 ################################################################
 
 app = Flask(__name__)
@@ -133,34 +158,8 @@ def bag_of_words(s, words):
 
 @app.route('/chatbot',methods=['GET','POST'])
 def chatbotData():
-
     inp = request.get_data(as_text=True)
     print('전달된 문자열:', inp)
-
-    training = []
-    output = []
-
-    out_empty = [0 for _ in range(len(labels))]
-
-    for x, doc in enumerate(docs_x):
-        bag = []
-
-        wrds = [okt.morphs(w.lower())[0] for w in doc]
-        # print(wrds)
-        for w in words:
-            if w in wrds:
-                bag.append(1)
-            else:
-                bag.append(0)
-
-        output_row = out_empty[:]
-        output_row[labels.index(docs_y[x])] = 1
-
-        training.append(bag)
-        output.append(output_row)
-
-    tensorflow.compat.v1.reset_default_graph()
-    model = keras.models.load_model("model.h5")
 
     results = model.predict([bag_of_words(inp, words)])
 
