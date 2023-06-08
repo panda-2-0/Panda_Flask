@@ -179,7 +179,6 @@ def bag_of_words(s, words):
 @app.route('/chatbot',methods=['GET','POST'])
 def chatbotData():
     inp = request.get_data(as_text=True)
-    print('전달된 문자열:', inp)
 
     results = chatbot_model.predict([bag_of_words(inp, words)])
 
@@ -219,4 +218,4 @@ def imagedata():
 
 
 if __name__ == '__main__':
-    app.run()
+    app.run(host='0.0.0.0')
