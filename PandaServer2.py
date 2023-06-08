@@ -1,13 +1,18 @@
+import base64
+
 import pandas as pd
 from mlxtend.preprocessing import TransactionEncoder
 from mlxtend.frequent_patterns import apriori, association_rules
-from flask import Flask, request,jsonify
+from flask import Flask, request, jsonify
 from tensorflow import keras
 from konlpy.tag import Okt
 import numpy as np
 import tensorflow
+from PIL import Image
 import random
 import json
+import base64
+from io import BytesIO
 okt = Okt()
 
 ################################################################
@@ -36,7 +41,7 @@ words = sorted(list(set(words)))
 labels = sorted(labels)
 
 tensorflow.compat.v1.reset_default_graph()
-model = keras.models.load_model("model.h5")
+chatbot_model = keras.models.load_model("model.h5")
 
 training = []
 output = []
@@ -59,6 +64,21 @@ for x, doc in enumerate(docs_x):
 
     training.append(bag)
     output.append(output_row)
+
+categoryArr = [
+    '가구기타', '소파', '책상', '침대',
+    'TV', '가전기타', '냉장고', '청소기',
+    '도서/문구기타', '볼펜', '샤프/연필', '책',
+    '모바일/태블릿/PC기타', '노트북', '스마트폰', '태블릿',
+    '반려동물기타', '사료', '애견의류', 'Toy',
+    '뷰티기타', '메이크업', '스킨케어', '클렌징', '헤어용품',
+    '생활용품기타', '욕실', '주방', '청소',
+    '스포츠기타', '농구', '야구', '축구', '헬스',
+    '과자', '식품기타', '라면', '빵', '생수',
+    '의류기타', '모자', '상의', '하의', '신발',
+    '자동차기타', '방향제', '블랙박스', '장식 악세사리']
+
+image_model = keras.models.load_model("model2.h5")
 ################################################################
 
 app = Flask(__name__)
@@ -161,7 +181,7 @@ def chatbotData():
     inp = request.get_data(as_text=True)
     print('전달된 문자열:', inp)
 
-    results = model.predict([bag_of_words(inp, words)])
+    results = chatbot_model.predict([bag_of_words(inp, words)])
 
     max_prob = max(results[0])
 
@@ -179,6 +199,24 @@ def chatbotData():
         print(message)
 
         return message
+
+@app.route('/image', methods=['GET', 'POST'])
+def imagedata():
+
+    base64_image_data = request.get_data(as_text=True);
+    # print(base64_image_data)
+
+    image_data = base64.b64decode(base64_image_data.split(",")[-1])
+
+    with Image.open(BytesIO(image_data)) as image:
+        image = image.resize((100,100))
+        image = image.convert("RGB")
+
+        result = image_model.predict(np.array(image).reshape(-1, 100, 100, 3))
+        dc = categoryArr[np.argmax(result)]
+        print(dc)
+        return dc
+
 
 if __name__ == '__main__':
     app.run()
